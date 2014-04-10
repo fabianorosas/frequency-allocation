@@ -4,8 +4,9 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.SocketException;
 
-public class Host implements Runnable {
+public abstract class Host implements Runnable {
 	protected DatagramSocket socket;
 	protected DatagramPacket dtgSend;
 	protected DatagramPacket dtgReceive;
@@ -14,10 +15,16 @@ public class Host implements Runnable {
 	
 	protected String clientList;
 	
-	public Host() {
+	public Host(String clients, int port) {
 		Thread t = new Thread(this);
 		t.start();
-		clientList = "";
+		this.clientList = clients;
+		try {
+			this.socket = new DatagramSocket();
+		} catch (SocketException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -26,11 +33,13 @@ public class Host implements Runnable {
 	 */
 	@Override
 	public void run() {
-		// TODO Auto-generated method stub
+		ouvirMeio();
 	}
 	
-	protected void sendMessage(String toSend, int port) throws IOException{
-		dtgSend = new DatagramPacket(toSend.getBytes(), toSend.length(), InetAddress.getLocalHost(), port);
+	public abstract void ouvirMeio();
+	
+	protected void sendMessage(String toSend, String ip, int port) throws IOException{
+		dtgSend = new DatagramPacket(toSend.getBytes(), toSend.length(), InetAddress.getByName(ip) , port);
 		socket.send(dtgSend);
 	}
 	
@@ -39,6 +48,12 @@ public class Host implements Runnable {
    	 	socket.receive(dtgReceive);
    	 	return new String(dtgReceive.getData());
 	}	
+	
+	protected void sendBroadcast(String toSend) throws IOException{
+		for(String port : clientList.replaceAll("(\\d*\\.){3}\\d*#", "").split("#")){
+			sendMessage(toSend, "255.255.255.255", Integer.parseInt(port));
+		}
+	}
 	
     public void close(){
     	this.socket.close();
