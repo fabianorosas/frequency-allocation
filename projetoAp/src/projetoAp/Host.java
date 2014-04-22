@@ -6,7 +6,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 
-public abstract class Host implements Runnable {
+public abstract class Host {
 	protected DatagramSocket socket;
 	protected DatagramPacket dtgSend;
 	protected DatagramPacket dtgReceive;
@@ -15,29 +15,11 @@ public abstract class Host implements Runnable {
 	
 	protected String clientList;
 	
-	public Host(String clients, int port) {
-		Thread t = new Thread(this);
-		t.start();
+	public Host(String clients, int port) throws SocketException {
 		this.clientList = clients;
-		try {
-			this.socket = new DatagramSocket();
-		} catch (SocketException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		this.socket = new DatagramSocket();
 	}
 
-	/**
-	 * Method to be used by the child classes
-	 * @throws IOException  
-	 */
-	@Override
-	public void run() {
-		ouvirMeio();
-	}
-	
-	public abstract void ouvirMeio();
-	
 	protected void sendBroadcast(String toSend) {
 		for(String port : clientList.replaceAll("(\\d*\\.){3}\\d*#", "").split("#")){
 			sendMessage(toSend, "255.255.255.255", Integer.parseInt(port));

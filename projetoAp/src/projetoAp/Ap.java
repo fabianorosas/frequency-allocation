@@ -1,86 +1,92 @@
 package projetoAp;
 
-public class Ap extends Host{
+import java.net.SocketException;
+import java.util.Timer;
+import java.util.TimerTask;
+
+public class Ap extends Host {
 	
 	private static final int BUSY_SWITCHING = -1;
 	private static final int CAN_SWITCH = 0;
 	
-	private int psi;
+	private static final int CHANNEL_SWITCHING_DELAY = 1000;
+	private static final int CHANNEL_SWITCHING_PERIOD = 1000;
 	
-	public Ap(String clients, int port){
+	private int psi;
+	private Timer timer;
+	private TimerTask switchChannel;
+	
+	public Ap(String clients, int port) throws SocketException{
 		super(clients, port);
 		this.psi = CAN_SWITCH;
+		
+		startTimer();
+		listen();
 	}
 
-	public void startPhase1(){
-		lockAll();
+	private void startTimer(){
+		timer = new Timer();
+		switchChannel = new TimerTask(){
+			@Override
+			public void run(){
+				if(canBeLocked()){
+					startPhase1();
+					startPhase2();
+				}
+			}
+		};
+		this.timer.schedule(switchChannel, CHANNEL_SWITCHING_DELAY, CHANNEL_SWITCHING_PERIOD);
 	}
 	
-	public void startPhase2(){
+	private void listen(){
+		msg = receiveMessage();
+		if( msg.startsWith("#lock") ) { 
+			//	TODO: locking logic
+		}
+		else if( msg.startsWith("#unlock") ){
+			//	TODO: unlocking logic
+		}
+		else{
+			System.err.println("Stray message: " + msg);
+		}
+		
+	}	
+	
+	private void startPhase1(){
+		this.psi = BUSY_SWITCHING;
+		
+		lockAllClients();
+	}
+	
+	private void startPhase2(){
 		waitForReplies();
-		if(wereChildrenLocked()){
+		if(allChildrenAreLocked()){
 			switchChannel();
 		}
 		unlockAll();
 	}
-	
-	public void switchChannel(){
+
+	private void waitForReplies(){
+		
+	}
+
+	private void switchChannel(){
 		
 	}
 	
-	public void lockAll(){
+	private void lockAllClients() {
+		sendBroadcast("#lock");
+	}
+	
+	private void unlockAll(){
 		
 	}
 	
-	public void unlockAll(){
-		
-	}
-	
-	public void waitForReplies(){
-		
-	}
-	
-	public boolean wereChildrenLocked(){
+	private boolean allChildrenAreLocked(){
 		return false;
 	}
 	
-	public boolean canBeLocked(){
+	private boolean canBeLocked(){
 		return !(this.psi == BUSY_SWITCHING);
-	}
-	
-	@Override
-	public void ouvirMeio() {
-		while(true){
-			/*
-			msg = receiveMessage();
-			if( msg.startsWith("1#") ) { //client connection
-				App.showMessage(dtgReceive.getAddress().getHostAddress() + ":" + dtgReceive.getPort() + " connected!");
-				clientList = clientList.concat(dtgReceive.getAddress().getHostAddress() + "#" + dtgReceive.getPort() + "#");
-				sendBroadcast("2#" + clientList);
-				App.updateList(clientList);
-			}
-			else if( msg.startsWith("3#") ){ //message exchange
-				if(msg.substring(2).startsWith(brdcst)){
-					sendBroadcast("4#" + msg.substring(2));
-				}
-				else{
-					String[] msgSplit = msg.split("#");
-					String toSend = "4#" + dtgReceive.getAddress().getHostAddress() + "#" + dtgReceive.getPort() + "#" + msgSplit[3].trim(); 
-					sendMessage(toSend, msgSplit[1], Integer.parseInt(msgSplit[2]));
-				}
-				App.showMessage(msg.substring(2));
-			}
-			else if( msg.startsWith("5#") ){ //client disconnection
-				App.showMessage(dtgReceive.getAddress().getHostAddress() + ":" + dtgReceive.getPort() + " disconnected!");
-				String removeHost = dtgReceive.getAddress().getHostAddress() + "#" + dtgReceive.getPort() + "#";
-				clientList = clientList.replaceFirst(Pattern.quote(removeHost), "");
-				sendBroadcast("2#" + clientList);
-				App.updateList(clientList);
-			}
-			else{
-				App.lblStatusServer.setText("STRAY MESSAGE: " + msg);
-			}
-			*/
-		}
 	}
 }
