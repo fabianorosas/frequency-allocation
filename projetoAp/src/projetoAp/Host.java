@@ -38,22 +38,31 @@ public abstract class Host implements Runnable {
 	
 	public abstract void ouvirMeio();
 	
-	protected void sendMessage(String toSend, String ip, int port) throws IOException{
-		dtgSend = new DatagramPacket(toSend.getBytes(), toSend.length(), InetAddress.getByName(ip) , port);
-		socket.send(dtgSend);
-	}
-	
-	protected String receiveMessage() throws IOException{
-		dtgReceive = new DatagramPacket(new byte[512], 512);
-   	 	socket.receive(dtgReceive);
-   	 	return new String(dtgReceive.getData());
-	}	
-	
-	protected void sendBroadcast(String toSend) throws IOException{
+	protected void sendBroadcast(String toSend) {
 		for(String port : clientList.replaceAll("(\\d*\\.){3}\\d*#", "").split("#")){
 			sendMessage(toSend, "255.255.255.255", Integer.parseInt(port));
 		}
 	}
+
+	protected void sendMessage(String toSend, String ip, int port) {
+		try {
+			dtgSend = new DatagramPacket(toSend.getBytes(), toSend.length(), InetAddress.getByName(ip) , port);
+			socket.send(dtgSend);
+		} catch (IOException e) {
+			System.err.println(e.toString());
+		}
+		
+	}
+	
+	protected String receiveMessage() {
+		dtgReceive = new DatagramPacket(new byte[512], 512);
+   	 	try {
+			socket.receive(dtgReceive);
+		} catch (IOException e) {
+			System.err.println(e.toString());
+		}
+   	 	return new String(dtgReceive.getData());
+	}	
 	
     public void close(){
     	this.socket.close();
