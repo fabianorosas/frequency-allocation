@@ -1,9 +1,51 @@
 package projetoAp;
 
 public class Ap extends Host{
-
+	
+	private static final int BUSY_SWITCHING = -1;
+	private static final int CAN_SWITCH = 0;
+	
+	private int psi;
+	
 	public Ap(String clients, int port){
 		super(clients, port);
+		this.psi = CAN_SWITCH;
+	}
+
+	public void startPhase1(){
+		lockAll();
+	}
+	
+	public void startPhase2(){
+		waitForReplies();
+		if(wereChildrenLocked()){
+			switchChannel();
+		}
+		unlockAll();
+	}
+	
+	public void switchChannel(){
+		
+	}
+	
+	public void lockAll(){
+		
+	}
+	
+	public void unlockAll(){
+		
+	}
+	
+	public void waitForReplies(){
+		
+	}
+	
+	public boolean wereChildrenLocked(){
+		return false;
+	}
+	
+	public boolean canBeLocked(){
+		return !(this.psi == BUSY_SWITCHING);
 	}
 	
 	@Override
