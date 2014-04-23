@@ -133,11 +133,11 @@ public class Ap extends Host {
 		}
 	}
 	
-	private double getMaxInterference(int c){
+	private double getMaxInterference(int possibleChannel){
 		double maxInterferenceInChannel = 0.0;
 		
 		for(int response : clientResponse){
-			maxInterferenceInChannel = Math.max(maxInterferenceInChannel, interferenceModel.get(Math.abs(channel-response)));
+			maxInterferenceInChannel = Math.max(maxInterferenceInChannel, interferenceModel.get(Math.abs(possibleChannel-response)));
 		}
 		
 		return maxInterferenceInChannel;
