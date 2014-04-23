@@ -53,7 +53,10 @@ public class Ap extends Host {
 		if( msg.startsWith("#lock") ) { 
 			if(canBeLocked()){
 				psi++; //lock
-				replyWithChannel();
+				reply("#" + channel);
+			}
+			else{
+				reply("#busy");
 			}
 		}
 		else if( msg.startsWith("#unlock") ){
@@ -86,8 +89,7 @@ public class Ap extends Host {
 		//TODO: should it really block? or should it keep listening to the medium and receiving locking requests from other APs?
 	}
 
-	private void replyWithChannel(){
-		String toSend = "#" + channel; 
+	private void reply(String toSend){
 		sendMessage(toSend, dtgReceive.getAddress().getHostAddress(), dtgReceive.getPort());
 	}
 	
