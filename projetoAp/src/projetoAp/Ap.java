@@ -127,7 +127,10 @@ public class Ap extends Host {
 				minInterferenceChannel = channel;
 			}
 		}
-		this.channel = minInterferenceChannel;
+		if( minInterferenceChannel != this.channel ){
+			this.channel = minInterferenceChannel;
+			System.out.println("Channel switch");
+		}
 	}
 	
 	private double getMaxInterference(int c){
