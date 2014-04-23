@@ -59,7 +59,7 @@ public class Ap extends Host {
 		msg = receiveMessage();
 		if( msg.startsWith("#lock") ) { 
 			if(canBeLocked()){
-				psi++; //lock
+				psi++;
 				reply("#" + channel);
 			}
 			else{
@@ -118,13 +118,21 @@ public class Ap extends Host {
 	}
 	
 	private void unlockAllChildren(){
-		sendBroadcast("#unlock");
-		//TODO: send this message only to the APs that were previously locked, to reduce network overhead
+		for(int i = 0; i < clientResponse.length; i++){
+			if(clientResponse[i] != BUSY_SWITCHING){
+				int idx = clients[i].indexOf(":");
+				sendMessage("#unlock", clients[i].substring(0, idx), Integer.parseInt(clients[i].substring(idx)));
+			}
+		}
 	}
 	
 	private boolean allChildrenAreLocked(){
-		//TODO: check the response of the children to know if they were able to lock.
-		return false;
+		for(int response : clientResponse){
+			if(response == BUSY_SWITCHING){
+				return false;
+			}
+		}
+		return true;
 	}
 	
 	private void countClients(){
