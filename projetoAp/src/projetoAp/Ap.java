@@ -2,6 +2,7 @@ package projetoAp;
 
 import java.net.SocketException;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -21,15 +22,17 @@ public class Ap extends Host {
 	private int channel;
 	private int[] clientResponse;
 	private String[] clients;
-	
+	private Map<Integer,Double> interferenceModel;
+		
 	public Ap(String clients, int port) throws SocketException{
 		super(clients, port);
 
-		countClients();
-		initClientsResponse();
-		
 		this.psi = CAN_SWITCH;
 		this.channel = 1;
+		
+		countClients();
+		initClientsResponse();
+		initInterferenceModel();
 		
 		startTimer();
 		listen();
@@ -112,7 +115,14 @@ public class Ap extends Host {
 	}
 	
 	private void tryToSwitchChannel(){
-		//TODO: the channel switching logic
+		/*
+		for(int response : clientResponse){
+			if(response == BUSY_SWITCHING){
+				return false;
+			}
+		}
+		return true;
+		*/
 	}
 	
 	private void lockAllClients(){
@@ -147,6 +157,20 @@ public class Ap extends Host {
 	private void initClientsResponse(){
 		clientResponse = new int[NUMBER_OF_CLIENTS];
 		resetClientResponse();
+	}
+	
+	private void initInterferenceModel(){
+		interferenceModel.put(0, 1.0);
+		interferenceModel.put(1, 0.7272);
+		interferenceModel.put(2, 0.2714);	
+		interferenceModel.put(3, 0.0375);
+		interferenceModel.put(4, 0.0054);
+		interferenceModel.put(5, 0.0008);
+		interferenceModel.put(6, 0.0002);
+		interferenceModel.put(7, 0.0);
+		interferenceModel.put(8, 0.0);
+		interferenceModel.put(9, 0.0);
+		interferenceModel.put(10, 0.0);		
 	}
 	
 	private void resetClientResponse(){
