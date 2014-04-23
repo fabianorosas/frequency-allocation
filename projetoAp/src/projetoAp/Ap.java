@@ -80,22 +80,25 @@ public class Ap extends Host {
 	
 	private void startPhase1(){
 		this.psi = BUSY_SWITCHING;
-		lockAllChildren();
+		lockAllClients();
 	}
 	
 	private void startPhase2(){
 		waitForReplies();
-		if(allChildrenAreLocked()){
+		if(allClientsAreLocked()){
 			tryToSwitchChannel();
+			sendBroadcast("#unlock");
 		}
-		unlockAllChildren();
+		else{
+			unlockAllClients();
+		}
 	}
 
 	private void waitForReplies(){
-		while(!allChildrenReplied());
+		while(!allClientsReplied());
 	}
 
-	private boolean allChildrenReplied(){
+	private boolean allClientsReplied(){
 		for(int response : clientResponse){
 			if(response == -2){
 				return false;
@@ -112,12 +115,12 @@ public class Ap extends Host {
 		//TODO: the channel switching logic
 	}
 	
-	private void lockAllChildren(){
+	private void lockAllClients(){
 		resetClientResponse();
 		sendBroadcast("#lock");
 	}
 	
-	private void unlockAllChildren(){
+	private void unlockAllClients(){
 		for(int i = 0; i < clientResponse.length; i++){
 			if(clientResponse[i] != BUSY_SWITCHING){
 				int idx = clients[i].indexOf(":");
@@ -126,7 +129,7 @@ public class Ap extends Host {
 		}
 	}
 	
-	private boolean allChildrenAreLocked(){
+	private boolean allClientsAreLocked(){
 		for(int response : clientResponse){
 			if(response == BUSY_SWITCHING){
 				return false;
