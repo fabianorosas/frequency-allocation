@@ -20,6 +20,7 @@ public class Ap extends Host {
 	
 	private int psi;
 	private int channel;
+	private int[] possibleChannels;
 	private int[] clientResponse;
 	private String[] clients;
 	private Map<Integer,Double> interferenceModel;
@@ -29,6 +30,7 @@ public class Ap extends Host {
 
 		this.psi = CAN_SWITCH;
 		this.channel = 1;
+		this.possibleChannels = new int[]{1,6,11};
 		
 		countClients();
 		initClientsResponse();
@@ -89,7 +91,7 @@ public class Ap extends Host {
 	private void startPhase2(){
 		waitForReplies();
 		if(allClientsAreLocked()){
-			tryToSwitchChannel();
+			updateChannel();
 			sendBroadcast("#unlock");
 		}
 		else{
@@ -114,15 +116,28 @@ public class Ap extends Host {
 		sendMessage(toSend, dtgReceive.getAddress().getHostAddress(), dtgReceive.getPort());
 	}
 	
-	private void tryToSwitchChannel(){
-		/*
-		for(int response : clientResponse){
-			if(response == BUSY_SWITCHING){
-				return false;
+	private void updateChannel(){
+		int minInterferenceChannel=0;
+		double minInterference = Double.MAX_VALUE;
+		
+		for(int possibleChannel : possibleChannels){
+			double maxInterferenceInChannel = getMaxInterference(possibleChannel); 
+			if(maxInterferenceInChannel < minInterference){
+				minInterference = maxInterferenceInChannel;
+				minInterferenceChannel = channel;
 			}
 		}
-		return true;
-		*/
+		this.channel = minInterferenceChannel;
+	}
+	
+	private double getMaxInterference(int c){
+		double maxInterferenceInChannel = 0.0;
+		
+		for(int response : clientResponse){
+			maxInterferenceInChannel = Math.max(maxInterferenceInChannel, interferenceModel.get(Math.abs(channel-response)));
+		}
+		
+		return maxInterferenceInChannel;
 	}
 	
 	private void lockAllClients(){
