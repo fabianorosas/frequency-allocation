@@ -11,43 +11,56 @@ import java.util.Scanner;
 public class Main {
 	
 	private static int NUMBER_OF_APS;
-	//TODO: take things out of the main method
-	public static void main (String[] args){
-		Scanner arquivo = null;
-		
-		ArrayList<Ap> accessPoints = new ArrayList<Ap>();
-		
-		Map<Integer,String> accessPointsAddrs = new HashMap<Integer, String>();
-		ArrayList<char []> topologia = new ArrayList<char []>();
-		Ap ap = null;
-		
-		try {
-			arquivo = new Scanner(new FileReader(args[0]));
-			for(int i = 0; arquivo.hasNext(); i++){
-				topologia.add(arquivo.nextLine().toCharArray());
-				ap = new Ap();
-				accessPoints.add(ap);
-				accessPointsAddrs.put(i, ap.getSocket().getLocalAddress().getHostAddress() + ":" + ap.getSocket().getPort());
-			}
-			NUMBER_OF_APS = topologia.size();
-		} catch (FileNotFoundException | SocketException e) {
-			System.err.println(e);
+	private static ArrayList<char []> topology = new ArrayList<char []>();
+	private static ArrayList<Ap> network = new ArrayList<Ap>();
+	private static Map<Integer,String> apAddrs = new HashMap<Integer, String>();
+	
+	public static void main (String[] args) throws FileNotFoundException, SocketException{
+		Scanner file = new Scanner(new FileReader(args[0]));
+
+		for(int i = 0; file.hasNext(); i++){
+			topology.add(file.nextLine().toCharArray());
+			mapTopology(i, instantiateAp());
 		}
+		file.close();
 		
-		for(int i=0; i < NUMBER_OF_APS; i++){
-			ArrayList<String> clientList = new ArrayList<String>(NUMBER_OF_APS);
+		NUMBER_OF_APS = topology.size();
+
+		setupClientLists();
+		startAps();
+	}
+	
+	private static void mapTopology(int idx, Ap ap){
+		apAddrs.put(idx, ap.getSocket().getLocalAddress().getHostAddress() + ":" + ap.getSocket().getPort());
+	}
+	
+	private static Ap instantiateAp() throws SocketException{
+		Ap ap = new Ap();
+		network.add(ap);
+		return ap;
+	}
+	
+	private static void setupClientLists(){
+		for(int ap=0; ap < NUMBER_OF_APS; ap++){
+			network.get(ap).setNUMBER_OF_CLIENTS(NUMBER_OF_APS);
+			network.get(ap).setClientList(makeClientList(ap));
+		}		
+	}
+	
+	private static ArrayList<String> makeClientList(int ap){
+		ArrayList<String> clientList = new ArrayList<String>(NUMBER_OF_APS);
 			
-			for(int j=0; j < NUMBER_OF_APS; j++){
-				if(topologia.get(i)[j] == 1){
-					clientList.add(accessPointsAddrs.get(j));
-				}
+		for(int i=0; i < NUMBER_OF_APS; i++){
+			if(topology.get(ap)[i] == 1){
+				clientList.add(apAddrs.get(i));
 			}
-			accessPoints.get(i).setNUMBER_OF_CLIENTS(NUMBER_OF_APS);
-			accessPoints.get(i).setClientList(clientList);
 		}
-		
-		for(Ap accessPoint : accessPoints){
-			accessPoint.start();
+		return clientList;
+	}
+	
+	private static void startAps(){
+		for(Ap ap : network){
+			ap.start();
 		}
 	}
 }
