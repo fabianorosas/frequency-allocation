@@ -25,13 +25,13 @@ public class Main {
 		file.close();
 		
 		NUMBER_OF_APS = topology.size();
-
+		
 		setupClientLists();
 		startAps();
 	}
 	
 	private static void mapTopology(int idx, Ap ap){
-		apAddrs.put(idx, ap.getSocket().getLocalAddress().getHostAddress() + ":" + ap.getSocket().getPort());
+		apAddrs.put(idx, ap.getSocket().getLocalAddress().getHostAddress() + ":" + ap.getSocket().getLocalPort());
 	}
 	
 	private static Ap instantiateAp() throws SocketException{
@@ -51,7 +51,7 @@ public class Main {
 		ArrayList<String> clientList = new ArrayList<String>(NUMBER_OF_APS);
 			
 		for(int i=0; i < NUMBER_OF_APS; i++){
-			if(topology.get(ap)[i] == 1){
+			if(topology.get(ap)[i] == '1'){
 				clientList.add(apAddrs.get(i));
 			}
 		}
