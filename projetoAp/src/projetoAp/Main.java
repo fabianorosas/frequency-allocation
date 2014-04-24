@@ -11,11 +11,12 @@ import java.util.Scanner;
 public class Main {
 	
 	private static int NUMBER_OF_APS;
-	
+	//TODO: take things out of the main method
 	public static void main (String[] args){
 		Scanner arquivo = null;
 		
 		ArrayList<Ap> accessPoints = new ArrayList<Ap>();
+		
 		Map<Integer,String> accessPointsAddrs = new HashMap<Integer, String>();
 		ArrayList<char []> topologia = new ArrayList<char []>();
 		Ap ap = null;
@@ -34,11 +35,11 @@ public class Main {
 		}
 		
 		for(int i=0; i < NUMBER_OF_APS; i++){
-			String clientList = "";
+			ArrayList<String> clientList = new ArrayList<String>(NUMBER_OF_APS);
 			
 			for(int j=0; j < NUMBER_OF_APS; j++){
 				if(topologia.get(i)[j] == 1){
-					clientList.concat(accessPointsAddrs.get(j) + "#");
+					clientList.add(accessPointsAddrs.get(j));
 				}
 			}
 			accessPoints.get(i).setNUMBER_OF_CLIENTS(NUMBER_OF_APS);

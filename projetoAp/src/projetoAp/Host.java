@@ -5,6 +5,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.util.ArrayList;
 
 public abstract class Host {
 	private DatagramSocket socket;
@@ -13,15 +14,17 @@ public abstract class Host {
 	    
 	protected String msg;
 	
-	private String clientList;
+	private ArrayList<String> clientList;
 	
 	public Host() throws SocketException {
 		this.socket = new DatagramSocket();
+		this.clientList = new ArrayList<String>();
 	}
 
 	protected void sendBroadcast(String toSend) {
-		for(String port : getClientList().replaceAll("(\\d*\\.){3}\\d*#", "").split("#")){
-			sendMessage(toSend, "255.255.255.255", Integer.parseInt(port));
+		for(String client : clientList) {
+			int port = Integer.parseInt(client.split(":|#")[1]);
+			sendMessage(toSend, "255.255.255.255", port);
 		}
 	}
 
@@ -52,11 +55,11 @@ public abstract class Host {
 		return socket;
 	}
 
-	public String getClientList() {
+	public ArrayList<String> getClientList() {
 		return clientList;
 	}
 
-	public void setClientList(String clientList) {
+	public void setClientList(ArrayList<String> clientList) {
 		this.clientList = clientList;
 	}
 }

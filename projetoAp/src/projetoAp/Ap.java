@@ -1,6 +1,7 @@
 package projetoAp;
 
 import java.net.SocketException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,7 +24,6 @@ public class Ap extends Host {
 	private int channel;
 	private int[] possibleChannels;
 	private int[] clientResponse;
-	private String[] clients;
 	private Map<Integer,Double> interferenceModel;
 		
 	public Ap() throws SocketException{
@@ -77,7 +77,7 @@ public class Ap extends Host {
 			psi--;
 		}
 		else if ( msg.startsWith("#c") ){
-			int clientIndex = Arrays.binarySearch(clients, dtgReceive.getAddress().getHostAddress() + ":" + dtgReceive.getPort() + "#");
+			int clientIndex = getClientList().indexOf(dtgReceive.getAddress().getHostAddress() + ":" + dtgReceive.getPort());
 			clientResponse[clientIndex] = Integer.parseInt(msg.substring(2));
 		}
 		else{
@@ -151,10 +151,12 @@ public class Ap extends Host {
 	}
 	
 	private void unlockAllClients(){
+		String[] clientAddr;
+		
 		for(int i = 0; i < clientResponse.length; i++){
 			if(clientResponse[i] != BUSY_SWITCHING){
-				int idx = clients[i].indexOf(":");
-				sendMessage("#unlock", clients[i].substring(0, idx), Integer.parseInt(clients[i].substring(idx)));
+				clientAddr = getClientList().get(i).split(":"); 
+				sendMessage("#unlock", clientAddr[0], Integer.parseInt(clientAddr[1]));
 			}
 		}
 	}
@@ -168,12 +170,6 @@ public class Ap extends Host {
 		return true;
 	}
 	
-	private void countClients(){
-		//TODO: Remove clientList from Host
-		clients = getClientList().split("#");
-		Arrays.sort(clients);
-	}
-		
 	private void initClientsResponse(){
 		clientResponse = new int[NUMBER_OF_CLIENTS];
 		resetClientResponse();
@@ -202,9 +198,8 @@ public class Ap extends Host {
 	}
 	
 	@Override
-	public void setClientList(String clientList){
+	public void setClientList(ArrayList<String> clientList){
 		super.setClientList(clientList);
-		countClients();
 		initClientsResponse();
 	}
 	//TODO: add a toString method to show the final channel
