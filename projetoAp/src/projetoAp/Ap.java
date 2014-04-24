@@ -25,8 +25,8 @@ public class Ap extends Host {
 	private String[] clients;
 	private Map<Integer,Double> interferenceModel;
 		
-	public Ap(String clients, int port) throws SocketException{
-		super(clients, port);
+	public Ap() throws SocketException{
+		super();
 
 		this.psi = CAN_SWITCH;
 		this.channel = 1;
@@ -167,7 +167,7 @@ public class Ap extends Host {
 	}
 	
 	private void countClients(){
-		clients = clientList.split("#");
+		clients = getClientList().split("#");
 		Arrays.sort(clients);
 		NUMBER_OF_CLIENTS = clients.length;
 	}

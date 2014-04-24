@@ -7,21 +7,20 @@ import java.net.InetAddress;
 import java.net.SocketException;
 
 public abstract class Host {
-	protected DatagramSocket socket;
+	private DatagramSocket socket;
 	protected DatagramPacket dtgSend;
 	protected DatagramPacket dtgReceive;
 	    
 	protected String msg;
 	
-	protected String clientList;
+	private String clientList;
 	
-	public Host(String clients, int port) throws SocketException {
-		this.clientList = clients;
-		this.socket = new DatagramSocket();
+	public Host() throws SocketException {
+		this.setSocket(new DatagramSocket());
 	}
 
 	protected void sendBroadcast(String toSend) {
-		for(String port : clientList.replaceAll("(\\d*\\.){3}\\d*#", "").split("#")){
+		for(String port : getClientList().replaceAll("(\\d*\\.){3}\\d*#", "").split("#")){
 			sendMessage(toSend, "255.255.255.255", Integer.parseInt(port));
 		}
 	}
@@ -29,7 +28,7 @@ public abstract class Host {
 	protected void sendMessage(String toSend, String ip, int port) {
 		try {
 			dtgSend = new DatagramPacket(toSend.getBytes(), toSend.length(), InetAddress.getByName(ip) , port);
-			socket.send(dtgSend);
+			getSocket().send(dtgSend);
 		} catch (IOException e) {
 			System.err.println(e.toString());
 		}
@@ -39,7 +38,7 @@ public abstract class Host {
 	protected String receiveMessage() {
 		dtgReceive = new DatagramPacket(new byte[512], 512);
    	 	try {
-			socket.receive(dtgReceive);
+			getSocket().receive(dtgReceive);
 		} catch (IOException e) {
 			System.err.println(e.toString());
 		}
@@ -47,6 +46,22 @@ public abstract class Host {
 	}	
 	
     public void close(){
-    	this.socket.close();
+    	this.getSocket().close();
     }
+
+	public DatagramSocket getSocket() {
+		return socket;
+	}
+
+	public void setSocket(DatagramSocket socket) {
+		this.socket = socket;
+	}
+
+	public String getClientList() {
+		return clientList;
+	}
+
+	public void setClientList(String clientList) {
+		this.clientList = clientList;
+	}
 }
