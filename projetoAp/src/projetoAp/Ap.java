@@ -35,11 +35,13 @@ public class Ap extends Host {
 		this.interferenceModel = new HashMap<Integer,Double>();
 		
 		initInterferenceModel();
-		
+	}
+
+	public void start(){
 		startTimer();
 		listen();
 	}
-
+	
 	/**
 	 * Executes the channel switching logic every <CHANNEL_SWITCHING_PERIOD> milliseconds.
 	 */
@@ -167,12 +169,13 @@ public class Ap extends Host {
 	}
 	
 	private void countClients(){
+		//TODO: Remove clientList from Host
 		clients = getClientList().split("#");
 		Arrays.sort(clients);
 	}
 		
 	private void initClientsResponse(){
-		clientResponse = new int[getNUMBER_OF_CLIENTS()];
+		clientResponse = new int[NUMBER_OF_CLIENTS];
 		resetClientResponse();
 	}
 	

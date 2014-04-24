@@ -16,7 +16,7 @@ public abstract class Host {
 	private String clientList;
 	
 	public Host() throws SocketException {
-		this.setSocket(new DatagramSocket());
+		this.socket = new DatagramSocket();
 	}
 
 	protected void sendBroadcast(String toSend) {
@@ -32,7 +32,6 @@ public abstract class Host {
 		} catch (IOException e) {
 			System.err.println(e.toString());
 		}
-		
 	}
 	
 	protected String receiveMessage() {
@@ -46,15 +45,11 @@ public abstract class Host {
 	}	
 	
     public void close(){
-    	this.getSocket().close();
+    	this.socket.close();
     }
 
 	public DatagramSocket getSocket() {
 		return socket;
-	}
-
-	public void setSocket(DatagramSocket socket) {
-		this.socket = socket;
 	}
 
 	public String getClientList() {

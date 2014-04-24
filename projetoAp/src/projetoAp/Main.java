@@ -26,7 +26,7 @@ public class Main {
 				topologia.add(arquivo.nextLine().toCharArray());
 				ap = new Ap();
 				accessPoints.add(ap);
-				accessPointsAddrs.put(i, ap.getSocket().getInetAddress().getHostAddress() + ":" + ap.getSocket().getPort());
+				accessPointsAddrs.put(i, ap.getSocket().getLocalAddress().getHostAddress() + ":" + ap.getSocket().getPort());
 			}
 			NUMBER_OF_APS = topologia.size();
 		} catch (FileNotFoundException | SocketException e) {
@@ -41,9 +41,12 @@ public class Main {
 					clientList.concat(accessPointsAddrs.get(j) + "#");
 				}
 			}
-			
-			accessPoints.get(i).setClientList(clientList);
 			accessPoints.get(i).setNUMBER_OF_CLIENTS(NUMBER_OF_APS);
+			accessPoints.get(i).setClientList(clientList);
+		}
+		
+		for(Ap accessPoint : accessPoints){
+			accessPoint.start();
 		}
 	}
 }
