@@ -2,6 +2,7 @@ package projetoAp;
 
 import java.net.SocketException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -31,9 +32,8 @@ public class Ap extends Host {
 		this.psi = CAN_SWITCH;
 		this.channel = 1;
 		this.possibleChannels = new int[]{1,6,11};
+		this.interferenceModel = new HashMap<Integer,Double>();
 		
-		countClients();
-		initClientsResponse();
 		initInterferenceModel();
 		
 		startTimer();
@@ -169,11 +169,10 @@ public class Ap extends Host {
 	private void countClients(){
 		clients = getClientList().split("#");
 		Arrays.sort(clients);
-		NUMBER_OF_CLIENTS = clients.length;
 	}
 		
 	private void initClientsResponse(){
-		clientResponse = new int[NUMBER_OF_CLIENTS];
+		clientResponse = new int[getNUMBER_OF_CLIENTS()];
 		resetClientResponse();
 	}
 	
@@ -198,5 +197,20 @@ public class Ap extends Host {
 	private boolean canBeLocked(){
 		return !(this.psi == BUSY_SWITCHING);
 	}
+	
+	@Override
+	public void setClientList(String clientList){
+		super.setClientList(clientList);
+		countClients();
+		initClientsResponse();
+	}
 	//TODO: add a toString method to show the final channel
+
+	public int getNUMBER_OF_CLIENTS() {
+		return NUMBER_OF_CLIENTS;
+	}
+
+	public void setNUMBER_OF_CLIENTS(int NUMBER_OF_CLIENTS) {
+		this.NUMBER_OF_CLIENTS = NUMBER_OF_CLIENTS;
+	}
 }

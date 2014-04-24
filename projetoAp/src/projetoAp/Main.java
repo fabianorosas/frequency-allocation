@@ -9,6 +9,9 @@ import java.util.Map;
 import java.util.Scanner;
 
 public class Main {
+	
+	private static int NUMBER_OF_APS;
+	
 	public static void main (String[] args){
 		Scanner arquivo = null;
 		
@@ -25,20 +28,22 @@ public class Main {
 				accessPoints.add(ap);
 				accessPointsAddrs.put(i, ap.getSocket().getInetAddress().getHostAddress() + ":" + ap.getSocket().getPort());
 			}
+			NUMBER_OF_APS = topologia.size();
 		} catch (FileNotFoundException | SocketException e) {
 			System.err.println(e);
 		}
 		
-		for(int i=0; i < topologia.size(); i++){
+		for(int i=0; i < NUMBER_OF_APS; i++){
 			String clientList = "";
 			
-			for(int j=0; j < topologia.get(i).length; j++){
+			for(int j=0; j < NUMBER_OF_APS; j++){
 				if(topologia.get(i)[j] == 1){
 					clientList.concat(accessPointsAddrs.get(j) + "#");
 				}
 			}
 			
 			accessPoints.get(i).setClientList(clientList);
+			accessPoints.get(i).setNUMBER_OF_CLIENTS(NUMBER_OF_APS);
 		}
 	}
 }
