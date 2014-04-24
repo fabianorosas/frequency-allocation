@@ -198,4 +198,5 @@ public class Ap extends Host {
 	private boolean canBeLocked(){
 		return !(this.psi == BUSY_SWITCHING);
 	}
+	//TODO: add a toString method to show the final channel
 }
