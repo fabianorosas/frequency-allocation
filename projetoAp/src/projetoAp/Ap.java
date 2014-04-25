@@ -33,13 +33,23 @@ public class Ap extends Host {
 		this.channel = 1;
 		this.possibleChannels = new int[]{1,6,11};
 		this.interferenceModel = new HashMap<Integer,Double>();
-		
-		initInterferenceModel();
-	}
 
-	public void start(){
+		initInterferenceModel();
+		waitForClientList();
 		startTimer();
 		listen();
+	}
+
+	public void waitForClientList(){
+		String[] clientList;
+		
+		msg = receiveMessage();
+		
+		if( msg.startsWith("#clientList#") ) {
+			clientList = msg.substring(12).split("#");
+			super.setClientList(new ArrayList<String>(Arrays.asList(clientList)));
+			initClientsResponse();
+		}
 	}
 	
 	/**
@@ -197,11 +207,6 @@ public class Ap extends Host {
 		return !(this.psi == BUSY_SWITCHING);
 	}
 	
-	@Override
-	public void setClientList(ArrayList<String> clientList){
-		super.setClientList(clientList);
-		initClientsResponse();
-	}
 	//TODO: add a toString method to show the final channel
 
 	public int getNUMBER_OF_CLIENTS() {
@@ -210,5 +215,9 @@ public class Ap extends Host {
 
 	public void setNUMBER_OF_CLIENTS(int NUMBER_OF_CLIENTS) {
 		this.NUMBER_OF_CLIENTS = NUMBER_OF_CLIENTS;
+	}
+	
+	public static void main (String[] args) throws SocketException{
+		new Ap();
 	}
 }

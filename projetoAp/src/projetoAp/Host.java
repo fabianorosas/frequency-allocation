@@ -20,6 +20,10 @@ public abstract class Host {
 		this.socket = new DatagramSocket();
 		this.clientList = new ArrayList<String>();
 	}
+	
+	public Host(int port) throws SocketException{
+		this.socket = new DatagramSocket(port);
+	}
 
 	protected void sendBroadcast(String toSend) {
 		for(String client : clientList) {
@@ -40,7 +44,7 @@ public abstract class Host {
 	protected String receiveMessage() {
 		dtgReceive = new DatagramPacket(new byte[512], 512);
    	 	try {
-			getSocket().receive(dtgReceive);
+			socket.receive(dtgReceive);
 		} catch (IOException e) {
 			System.err.println(e.toString());
 		}
