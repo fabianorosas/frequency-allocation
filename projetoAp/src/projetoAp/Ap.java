@@ -1,12 +1,15 @@
 package projetoAp;
 
-import java.net.SocketException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.logging.FileHandler;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 public class Ap extends Host {
 	
@@ -19,21 +22,31 @@ public class Ap extends Host {
 
 	private Timer timer;
 	private TimerTask switchChannel;
-	
+
+	private int idx;
 	private int psi;
 	private int channel;
 	private int[] possibleChannels;
 	private int[] clientResponse;
 	private Map<Integer,Double> interferenceModel;
-		
-	public Ap() throws SocketException{
-		super();
 
+	private Logger log;
+    	
+	public Ap(int idx, String[] serverAddr) {
+		super();
+		startLogging();
+		
+		log.info("received serverIP: " + serverAddr[0] + ": " + serverAddr[1]);
+		log.info("starting @"+ socket.getLocalAddress().getHostAddress()+":"+socket.getLocalPort());
+
+		this.serverIP = serverAddr[0];
+		this.serverPort = Integer.parseInt(serverAddr[1]);
 		this.psi = CAN_SWITCH;
 		this.channel = 1;
 		this.possibleChannels = new int[]{1,6,11};
 		this.interferenceModel = new HashMap<Integer,Double>();
-
+		
+		sayHello();
 		initInterferenceModel();
 		waitForClientList();
 		startTimer();
@@ -91,7 +104,7 @@ public class Ap extends Host {
 			clientResponse[clientIndex] = Integer.parseInt(msg.substring(2));
 		}
 		else{
-			System.err.println("Stray message: " + msg);
+			log.warning("Stray message: " + msg);
 		}
 	}	
 	
@@ -217,7 +230,30 @@ public class Ap extends Host {
 		this.NUMBER_OF_CLIENTS = NUMBER_OF_CLIENTS;
 	}
 	
-	public static void main (String[] args) throws SocketException{
-		new Ap();
+	private void sayHello(){
+		sendMessage("#" + idx, serverIP, serverPort);
+	}
+	
+	private void startLogging() {
+		FileHandler handler;
+		try {
+			handler = new FileHandler("ap"+idx+".log");
+			handler.setFormatter(new SimpleFormatter());
+			log = Logger.getLogger("Log AP " + idx);
+			log.addHandler(handler);
+		} catch (SecurityException | IOException e) {
+			System.err.println(e);
+		}
+	}
+	
+	/**
+	 * Starts an Access Point.
+	 * @param args <index number in the topology file> <server ip:server port>
+	 * @throws IOException 
+	 * @throws SecurityException 
+	 * @throws NumberFormatException 
+	 */
+	public static void main (String[] args) {
+		new Ap(Integer.parseInt(args[0]), args[1].split(":"));
 	}
 }
