@@ -8,7 +8,9 @@ import java.net.SocketException;
 import java.util.ArrayList;
 
 public abstract class Host {
-	private DatagramSocket socket;
+	protected DatagramSocket socket;
+	protected String serverIP;
+	protected int serverPort;
 	protected DatagramPacket dtgSend;
 	protected DatagramPacket dtgReceive;
 	    
@@ -16,8 +18,12 @@ public abstract class Host {
 	
 	private ArrayList<String> clientList;
 	
-	public Host() throws SocketException {
-		this.socket = new DatagramSocket();
+	public Host() {
+		try {
+			this.socket = new DatagramSocket();
+		} catch (SocketException e) {
+			System.err.println(e);
+		}
 		this.clientList = new ArrayList<String>();
 	}
 	

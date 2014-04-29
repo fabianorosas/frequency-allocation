@@ -36,6 +36,7 @@ public class Ap extends Host {
 		super();
 		startLogging();
 		
+		log.info("Hi! I am the AP of index: "+idx+"");
 		log.info("received serverIP: " + serverAddr[0] + ": " + serverAddr[1]);
 		log.info("starting @"+ socket.getLocalAddress().getHostAddress()+":"+socket.getLocalPort());
 
@@ -73,6 +74,7 @@ public class Ap extends Host {
 		switchChannel = new TimerTask(){
 			@Override
 			public void run(){
+				log.info("Started algorithm");
 				if(canBeLocked()){
 					startPhase1();
 					startPhase2();
@@ -125,6 +127,7 @@ public class Ap extends Host {
 	}
 
 	private void waitForReplies(){
+		log.info("Waiting for client replies");
 		while(!allClientsReplied());
 	}
 
@@ -154,7 +157,7 @@ public class Ap extends Host {
 		}
 		if( minInterferenceChannel != this.channel ){
 			this.channel = minInterferenceChannel;
-			System.out.println("Channel switch");
+			log.info("Switched channel");
 		}
 	}
 	
@@ -220,8 +223,6 @@ public class Ap extends Host {
 		return !(this.psi == BUSY_SWITCHING);
 	}
 	
-	//TODO: add a toString method to show the final channel
-
 	public int getNUMBER_OF_CLIENTS() {
 		return NUMBER_OF_CLIENTS;
 	}
@@ -237,7 +238,7 @@ public class Ap extends Host {
 	private void startLogging() {
 		FileHandler handler;
 		try {
-			handler = new FileHandler("ap"+idx+".log");
+			handler = new FileHandler("ap"+idx+".log", 0, 1, true);
 			handler.setFormatter(new SimpleFormatter());
 			log = Logger.getLogger("Log AP " + idx);
 			log.addHandler(handler);
