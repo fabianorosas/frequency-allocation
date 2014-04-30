@@ -245,9 +245,6 @@ public class Ap extends Host {
 			log = Logger.getLogger("projetoAp.Ap");
 			log.setUseParentHandlers(false);
 			log.addHandler(handler);
-			System.out.println("idx: " + idx);
-			System.out.println(log.getHandlers()[0]);
-
 		} catch (SecurityException | IOException e) {
 			System.err.println(e);
 		}
