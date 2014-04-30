@@ -34,11 +34,13 @@ public class Ap extends Host {
     	
 	public Ap(int idx, String[] serverAddr) {
 		super();
+		this.idx = idx;
 		startLogging();
 		
 		log.info("Hi! I am the AP of index: "+idx+"");
 		log.info("received serverIP: " + serverAddr[0] + ": " + serverAddr[1]);
 		log.info("starting @"+ socket.getLocalAddress().getHostAddress()+":"+socket.getLocalPort());
+
 
 		this.serverIP = serverAddr[0];
 		this.serverPort = Integer.parseInt(serverAddr[1]);
@@ -238,10 +240,14 @@ public class Ap extends Host {
 	private void startLogging() {
 		FileHandler handler;
 		try {
-			handler = new FileHandler("ap"+idx+".log", 0, 1, true);
+			handler = new FileHandler("ap" + idx + ".log", 0, 1, true);
 			handler.setFormatter(new SimpleFormatter());
-			log = Logger.getLogger("Log AP " + idx);
+			log = Logger.getLogger("projetoAp.Ap");
+			log.setUseParentHandlers(false);
 			log.addHandler(handler);
+			System.out.println("idx: " + idx);
+			System.out.println(log.getHandlers()[0]);
+
 		} catch (SecurityException | IOException e) {
 			System.err.println(e);
 		}
