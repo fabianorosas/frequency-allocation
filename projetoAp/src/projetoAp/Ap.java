@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.FileHandler;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
@@ -37,11 +38,6 @@ public class Ap extends Host {
 		this.idx = idx;
 		startLogging();
 		
-		log.info("Hi! I am the AP of index: "+idx+"");
-		log.info("received serverIP: " + serverAddr[0] + ": " + serverAddr[1]);
-		log.info("starting @"+ socket.getLocalAddress().getHostAddress()+":"+socket.getLocalPort());
-
-
 		this.serverIP = serverAddr[0];
 		this.serverPort = Integer.parseInt(serverAddr[1]);
 		this.psi = CAN_SWITCH;
@@ -60,10 +56,11 @@ public class Ap extends Host {
 		String[] clientList;
 		
 		msg = receiveMessage();
-		
+
 		if( msg.startsWith("#clientList#") ) {
-			clientList = msg.substring(12).split("#");
+			clientList = msg.substring(12).trim().split("#");
 			super.setClientList(new ArrayList<String>(Arrays.asList(clientList)));
+			setNUMBER_OF_CLIENTS(clientList.length);
 			initClientsResponse();
 		}
 	}
@@ -76,10 +73,11 @@ public class Ap extends Host {
 		switchChannel = new TimerTask(){
 			@Override
 			public void run(){
-				log.info("Started algorithm");
+				log.info("Starting algorithm...");
 				if(canBeLocked()){
 					startPhase1();
 					startPhase2();
+					psi--;
 				}
 			}
 		};
@@ -90,25 +88,31 @@ public class Ap extends Host {
 	 * Corresponds to the part where the AP functions as a client.
 	 */
 	private void listen(){
-		msg = receiveMessage();
-		if( msg.startsWith("#lock") ) { 
-			if(canBeLocked()){
-				psi++;
-				reply("#" + channel);
+		while(true){
+			msg = receiveMessage();
+
+			if( msg.startsWith("#lock") ) {
+				if(canBeLocked()){
+					log.info("Message " + msg.trim() + " received. I'm free: " + psi);
+					psi++;
+					reply("#c" + channel);
+				}
+				else{
+					log.info("Message " + msg.trim() + " received. I'm busy: " + psi);
+					reply("#c" + BUSY_SWITCHING );
+				}
+			}
+			else if( msg.startsWith("#unlock") ){
+				log.info("Message " + msg.trim() + " received. I'm " + psi);
+				psi--;
+			}
+			else if ( msg.startsWith("#c") ){
+				int clientIndex = getClientList().indexOf(dtgReceive.getAddress().getHostAddress() + ":" + dtgReceive.getPort());
+				clientResponse[clientIndex] = Integer.parseInt(msg.trim().substring(2));
 			}
 			else{
-				reply("#c" + BUSY_SWITCHING );
+				log.warning("Stray message: " + msg.trim());
 			}
-		}
-		else if( msg.startsWith("#unlock") ){
-			psi--;
-		}
-		else if ( msg.startsWith("#c") ){
-			int clientIndex = getClientList().indexOf(dtgReceive.getAddress().getHostAddress() + ":" + dtgReceive.getPort());
-			clientResponse[clientIndex] = Integer.parseInt(msg.substring(2));
-		}
-		else{
-			log.warning("Stray message: " + msg);
 		}
 	}	
 	
@@ -129,8 +133,8 @@ public class Ap extends Host {
 	}
 
 	private void waitForReplies(){
-		log.info("Waiting for client replies");
 		while(!allClientsReplied());
+		log.exiting(Ap.class.getName(), new Object(){}.getClass().getEnclosingMethod().getName()); //TODO: remove debug messages
 	}
 
 	private boolean allClientsReplied(){
@@ -147,6 +151,7 @@ public class Ap extends Host {
 	}
 	
 	private void updateChannel(){
+		log.entering(Ap.class.getName(), new Object(){}.getClass().getEnclosingMethod().getName()); //TODO: remove debug messages
 		int minInterferenceChannel=0;
 		double minInterference = Double.MAX_VALUE;
 		
@@ -161,12 +166,21 @@ public class Ap extends Host {
 			this.channel = minInterferenceChannel;
 			log.info("Switched channel");
 		}
+		log.exiting(Ap.class.getName(), new Object(){}.getClass().getEnclosingMethod().getName()); //TODO: remove debug messages
 	}
 	
 	private double getMaxInterference(int possibleChannel){
+		log.entering(Ap.class.getName(), new Object(){}.getClass().getEnclosingMethod().getName()); //TODO: remove debug messages
+				
+		for(int response : clientResponse){
+			log.info(String.valueOf(response));
+		}
+				
+				
 		double maxInterferenceInChannel = 0.0;
 		
 		for(int response : clientResponse){
+			log.info(String.valueOf(response));
 			maxInterferenceInChannel = Math.max(maxInterferenceInChannel, interferenceModel.get(Math.abs(possibleChannel-response)));
 		}
 		
@@ -179,6 +193,7 @@ public class Ap extends Host {
 	}
 	
 	private void unlockAllClients(){
+		log.entering(Ap.class.getName(), new Object(){}.getClass().getEnclosingMethod().getName()); //TODO: remove debug messages
 		String[] clientAddr;
 		
 		for(int i = 0; i < clientResponse.length; i++){
@@ -242,9 +257,11 @@ public class Ap extends Host {
 		try {
 			handler = new FileHandler("ap" + idx + ".log", 0, 1, true);
 			handler.setFormatter(new SimpleFormatter());
+			handler.setLevel(Level.ALL);
 			log = Logger.getLogger("projetoAp.Ap");
 			log.setUseParentHandlers(false);
 			log.addHandler(handler);
+			log.setLevel(Level.FINER);
 		} catch (SecurityException | IOException e) {
 			System.err.println(e);
 		}

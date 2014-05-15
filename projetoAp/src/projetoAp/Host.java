@@ -33,8 +33,8 @@ public abstract class Host {
 
 	protected void sendBroadcast(String toSend) {
 		for(String client : clientList) {
-			int port = Integer.parseInt(client.split(":|#")[1]);
-			sendMessage(toSend, "255.255.255.255", port);
+			String[] addr = client.split(":|#");
+			sendMessage(toSend, addr[0], Integer.parseInt(addr[1]));
 		}
 	}
 

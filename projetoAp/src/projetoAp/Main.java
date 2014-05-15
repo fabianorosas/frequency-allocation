@@ -24,6 +24,7 @@ public class Main extends Host {
 		initAps();
 		waitForReplies();
 		setupClientLists();
+		System.out.println("Finished setting the topology. Main process shutting down...");
 	}
 	
 	private void initAps() throws IOException {
@@ -54,8 +55,8 @@ public class Main extends Host {
 	}
 	
 	private void setupClientLists(){
-		String[] apAddr;
-		
+			String[] apAddr;
+			
 		System.out.println("Distributing client lists...");
 		
 		for(int ap=0; ap < NUMBER_OF_APS; ap++){
@@ -73,7 +74,7 @@ public class Main extends Host {
 		
 		for(int i=0; i < NUMBER_OF_APS;	 i++){
 			if(topology.get(ap)[i] == '1'){
-				clientList.concat(apAddrs.get(i) + "#");
+				clientList = clientList.concat(apAddrs.get(i) + "#");
 			}
 		}
 		return clientList;
