@@ -62,7 +62,7 @@ public class Ap extends Host {
 				if(canBeLocked()){
 					startPhase1();
 					startPhase2();
-					psi--;
+					psi--; //TODO: shouldn't it be psi = CAN_SWITCH?
 				}
 			}
 		};
