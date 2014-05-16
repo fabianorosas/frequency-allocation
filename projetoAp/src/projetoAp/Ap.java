@@ -3,8 +3,6 @@ package projetoAp;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.FileHandler;
@@ -29,7 +27,7 @@ public class Ap extends Host {
 	private int channel;
 	private int[] possibleChannels;
 	private int[] clientResponse;
-	private Map<Integer,Double> interferenceModel;
+	private InterferenceModel interferenceModel;
 
 	private Logger log;
     	
@@ -43,10 +41,10 @@ public class Ap extends Host {
 		this.psi = CAN_SWITCH;
 		this.channel = 1;
 		this.possibleChannels = new int[]{1,6,11};
-		this.interferenceModel = new HashMap<Integer,Double>();
+		this.interferenceModel = new InterferenceModel();
 		
 		sayHello();
-		initInterferenceModel();
+		
 		waitForClientList();
 		startTimer();
 		listen();
@@ -216,20 +214,6 @@ public class Ap extends Host {
 	private void initClientsResponse(){
 		clientResponse = new int[NUMBER_OF_CLIENTS];
 		resetClientResponse();
-	}
-	
-	private void initInterferenceModel(){
-		interferenceModel.put(0, 1.0);
-		interferenceModel.put(1, 0.7272);
-		interferenceModel.put(2, 0.2714);	
-		interferenceModel.put(3, 0.0375);
-		interferenceModel.put(4, 0.0054);
-		interferenceModel.put(5, 0.0008);
-		interferenceModel.put(6, 0.0002);
-		interferenceModel.put(7, 0.0);
-		interferenceModel.put(8, 0.0);
-		interferenceModel.put(9, 0.0);
-		interferenceModel.put(10, 0.0);		
 	}
 	
 	private void resetClientResponse(){
