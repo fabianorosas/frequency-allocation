@@ -151,6 +151,10 @@ public class Ap extends Host {
 			}
 		}
 	}
+
+	private void resetClientResponse(){
+		Arrays.fill(clientResponse, -2);
+	}
 	
 	private boolean allClientsAreLocked(){
 		for(int response : clientResponse){
@@ -175,11 +179,7 @@ public class Ap extends Host {
 		clientResponse = new int[NUMBER_OF_CLIENTS];
 		resetClientResponse();
 	}
-	
-	private void resetClientResponse(){
-		Arrays.fill(clientResponse, -2);
-	}
-	
+
 	private boolean canBeLocked(){
 		return !(this.psi == BUSY_SWITCHING);
 	}
