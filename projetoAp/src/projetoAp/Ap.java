@@ -50,19 +50,6 @@ public class Ap extends Host {
 		listen();
 	}
 
-	public void waitForClientList(){
-		String[] clientList;
-		
-		msg = receiveMessage();
-
-		if( msg.startsWith("#clientList#") ) {
-			clientList = msg.substring(12).trim().split("#");
-			super.setClientList(new ArrayList<String>(Arrays.asList(clientList)));
-			setNUMBER_OF_CLIENTS(clientList.length);
-			initClientsResponse();
-		}
-	}
-	
 	/**
 	 * Executes the channel switching logic every <CHANNEL_SWITCHING_PERIOD> milliseconds.
 	 */
@@ -208,6 +195,19 @@ public class Ap extends Host {
 	private void sayHello(){
 		sendMessage("#" + idx, serverIP, serverPort);
 	}
+	
+	public void waitForClientList(){
+		String[] clientList;
+		
+		msg = receiveMessage();
+
+		if( msg.startsWith("#clientList#") ) {
+			clientList = msg.substring(12).trim().split("#");
+			super.setClientList(new ArrayList<String>(Arrays.asList(clientList)));
+			setNUMBER_OF_CLIENTS(clientList.length);
+			initClientsResponse();
+		}
+	}	
 	
 	private void startLogging() {
 		FileHandler handler;
