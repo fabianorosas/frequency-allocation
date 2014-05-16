@@ -27,7 +27,7 @@ public class Ap extends Host {
 	private int channel;
 	private int[] possibleChannels;
 	private int[] clientResponse;
-	private InterferenceModel interferenceModel;
+	private ChannelUpdater updater;
 
 	private Logger log;
     	
@@ -41,7 +41,7 @@ public class Ap extends Host {
 		this.psi = CAN_SWITCH;
 		this.channel = 1;
 		this.possibleChannels = new int[]{1,6,11};
-		this.interferenceModel = new InterferenceModel();
+		this.updater = new ChannelUpdater(new GlobalCoord(possibleChannels));
 		
 		sayHello();
 		
@@ -148,43 +148,6 @@ public class Ap extends Host {
 		sendMessage(toSend, dtgReceive.getAddress().getHostAddress(), dtgReceive.getPort());
 	}
 	
-	private void updateChannel(){
-		log.entering(Ap.class.getName(), new Object(){}.getClass().getEnclosingMethod().getName()); //TODO: remove debug messages
-		int minInterferenceChannel=0;
-		double minInterference = Double.MAX_VALUE;
-		
-		for(int possibleChannel : possibleChannels){
-			double maxInterferenceInChannel = getMaxInterference(possibleChannel); 
-			if(maxInterferenceInChannel < minInterference){
-				minInterference = maxInterferenceInChannel;
-				minInterferenceChannel = channel;
-			}
-		}
-		if( minInterferenceChannel != this.channel ){
-			this.channel = minInterferenceChannel;
-			log.info("Switched channel");
-		}
-		log.exiting(Ap.class.getName(), new Object(){}.getClass().getEnclosingMethod().getName()); //TODO: remove debug messages
-	}
-	
-	private double getMaxInterference(int possibleChannel){
-		log.entering(Ap.class.getName(), new Object(){}.getClass().getEnclosingMethod().getName()); //TODO: remove debug messages
-				
-		for(int response : clientResponse){
-			log.info(String.valueOf(response));
-		}
-				
-				
-		double maxInterferenceInChannel = 0.0;
-		
-		for(int response : clientResponse){
-			log.info(String.valueOf(response));
-			maxInterferenceInChannel = Math.max(maxInterferenceInChannel, interferenceModel.get(Math.abs(possibleChannel-response)));
-		}
-		
-		return maxInterferenceInChannel;
-	}
-	
 	private void lockAllClients(){
 		resetClientResponse();
 		sendBroadcast("#lock");
@@ -210,6 +173,16 @@ public class Ap extends Host {
 		}
 		return true;
 	}
+	
+	private void updateChannel(){
+		int minInterferenceChannel = updater.updateChannel(channel, clientResponse);
+		
+		if( minInterferenceChannel != this.channel ){
+			this.channel = minInterferenceChannel;
+			log.info("Switched channel!");
+		}
+	}
+	
 	
 	private void initClientsResponse(){
 		clientResponse = new int[NUMBER_OF_CLIENTS];
