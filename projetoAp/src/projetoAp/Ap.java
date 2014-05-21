@@ -58,11 +58,11 @@ public class Ap extends Host {
 		switchChannel = new TimerTask(){
 			@Override
 			public void run(){
-				log.info("Starting algorithm...");
-				if(canBeLocked()){
+				log.entering(Ap.class.getName(), new Object(){}.getClass().getEnclosingMethod().getName()); //TODO: remove debug messages
+				if(canSwitch()){
 					startPhase1();
 					startPhase2();
-					psi--; //TODO: shouldn't it be psi = CAN_SWITCH?
+					psi = CAN_SWITCH;
 				}
 			}
 		};
@@ -73,36 +73,39 @@ public class Ap extends Host {
 	 * Corresponds to the part where the AP functions as a client.
 	 */
 	private void listen(){
+		log.entering(Ap.class.getName(), new Object(){}.getClass().getEnclosingMethod().getName()); //TODO: remove debug messages
 		while(true){
 			msg = receiveMessage();
-
-			if( msg.startsWith("#lock") ) {
-				if(canBeLocked()){
-					log.info("Message " + msg.trim() + " received. I'm free: " + psi);
-					psi++;
-					reply("#c" + channel);
+			
+			synchronized(this){
+				if( msg.startsWith("#lock") ) {
+					if(canBeLocked()){
+						log.info("Message " + msg.trim() + " received. I'm free: " + psi);
+						psi++;
+						reply("#c" + channel);
+					}
+					else{
+						log.info("Message " + msg.trim() + " received. I'm busy: " + psi);
+						reply("#c" + BUSY_SWITCHING );
+					}
+				}
+				else if( msg.startsWith("#unlock") ){
+					log.info("Message " + msg.trim() + " received. I'm " + psi);
+					psi--;
+				}
+				else if ( msg.startsWith("#c") ){
+					log.info("Message " + msg.trim() + " received. Channel: " + msg.trim());
+					int clientIndex = getClientList().indexOf(dtgReceive.getAddress().getHostAddress() + ":" + dtgReceive.getPort());
+					clientResponse[clientIndex] = Integer.parseInt(msg.trim().substring(2));
 				}
 				else{
-					log.info("Message " + msg.trim() + " received. I'm busy: " + psi);
-					reply("#c" + BUSY_SWITCHING );
+					log.warning("Stray message: " + msg.trim());
 				}
-			}
-			else if( msg.startsWith("#unlock") ){
-				log.info("Message " + msg.trim() + " received. I'm " + psi);
-				psi--;
-			}
-			else if ( msg.startsWith("#c") ){
-				int clientIndex = getClientList().indexOf(dtgReceive.getAddress().getHostAddress() + ":" + dtgReceive.getPort());
-				clientResponse[clientIndex] = Integer.parseInt(msg.trim().substring(2));
-			}
-			else{
-				log.warning("Stray message: " + msg.trim());
 			}
 		}
 	}	
 	
 	private void startPhase1(){
-		this.psi = BUSY_SWITCHING;
 		lockAllClients();
 	}
 	
@@ -136,6 +139,7 @@ public class Ap extends Host {
 	}
 	
 	private void lockAllClients(){
+		log.entering(Ap.class.getName(), new Object(){}.getClass().getEnclosingMethod().getName()); //TODO: remove debug messages
 		resetClientResponse();
 		sendBroadcast("#lock");
 	}
@@ -166,6 +170,7 @@ public class Ap extends Host {
 	}
 	
 	private void updateChannel(){
+		log.entering(Ap.class.getName(), new Object(){}.getClass().getEnclosingMethod().getName()); //TODO: remove debug messages
 		int minInterferenceChannel = updater.updateChannel(channel, clientResponse);
 		
 		if( minInterferenceChannel != this.channel ){
@@ -180,6 +185,14 @@ public class Ap extends Host {
 		resetClientResponse();
 	}
 
+	private synchronized boolean canSwitch(){
+		if(this.psi == CAN_SWITCH){ 
+			this.psi = BUSY_SWITCHING;
+			return true;
+		}
+		return false;
+	}
+	
 	private boolean canBeLocked(){
 		return !(this.psi == BUSY_SWITCHING);
 	}
