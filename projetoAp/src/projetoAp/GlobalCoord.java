@@ -20,7 +20,7 @@ public class GlobalCoord implements ChannelUpdateStrategy {
 			double maxInterferenceInChannel = getMaxInterference(possibleChannel, clientResponse); 
 			if(maxInterferenceInChannel < minInterference){
 				minInterference = maxInterferenceInChannel;
-				minInterferenceChannel = channel;
+				minInterferenceChannel = possibleChannel;
 			}
 		}
 		return minInterferenceChannel;
