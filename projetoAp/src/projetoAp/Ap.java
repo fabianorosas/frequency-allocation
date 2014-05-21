@@ -25,7 +25,6 @@ public class Ap extends Host {
 	private int idx;
 	private int psi;
 	private int channel;
-	private int[] possibleChannels;
 	private int[] clientResponse;
 	private ChannelUpdater updater;
 
@@ -40,8 +39,7 @@ public class Ap extends Host {
 		this.serverPort = Integer.parseInt(serverAddr[1]);
 		this.psi = CAN_SWITCH;
 		this.channel = 1;
-		this.possibleChannels = new int[]{1,6,11};
-		this.updater = new ChannelUpdater(new GlobalCoord(possibleChannels));
+		this.updater = new ChannelUpdater(new GlobalCoord(new int[]{1,6,11}));
 		
 		sayHello();
 		
@@ -172,6 +170,10 @@ public class Ap extends Host {
 	private void updateChannel(){
 		log.entering(Ap.class.getName(), new Object(){}.getClass().getEnclosingMethod().getName()); //TODO: remove debug messages
 		int minInterferenceChannel = updater.updateChannel(channel, clientResponse);
+		
+		log.info("my channel: " + channel);
+		log.info("clientResponse: " + clientResponse[0]);
+		log.info("minInterference channel: " + minInterferenceChannel);
 		
 		if( minInterferenceChannel != this.channel ){
 			this.channel = minInterferenceChannel;
