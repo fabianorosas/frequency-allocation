@@ -3,19 +3,24 @@ package projetoAp;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
 public class Main extends Host {
 	
+	private static final int IDLE_RUNS = 50;
 	private static int NUMBER_OF_APS;
 	private static int NUMBER_OF_PROCESSES;
 	private static ArrayList<char []> topology = new ArrayList<char []>();
 	private static Map<Integer,String> apAddrs = new HashMap<Integer, String>();
+	private static int[] responses;
 	
 	public Main(int port) throws IOException{
 		super(port);
+		responses = new int[NUMBER_OF_APS];
+		Arrays.fill(responses, 0);
 		System.out.println("Server starting @ "+ this.socket.getLocalAddress().getHostAddress()+":"+this.socket.getLocalPort());
 		setupTopology();
 	}
@@ -24,7 +29,41 @@ public class Main extends Host {
 		initAps();
 		waitForReplies();
 		setupClientLists();
-		System.out.println("Finished setting the topology. Main process shutting down...");
+		System.out.println("Topology set. Waiting for the APs to finish...");
+		waitResponses();
+	}
+	
+	private void waitResponses(){		
+		while(true){
+			msg = receiveMessage();
+			
+			if( msg.startsWith("#noop") ) {
+				int clientIndex = Integer.parseInt(msg.trim().substring(5));
+					responses[clientIndex]++;
+			}
+			else{
+				System.err.println("Stray message: " + msg.trim());
+			}
+			
+			if(switchingStopped()){
+				notifyAllAps();
+				System.out.println("All APs are idle for "+ IDLE_RUNS + " runs.");
+				System.exit(0);
+			}
+		}
+	}
+	
+	private void notifyAllAps(){
+		sendBroadcast("#stop");
+	}
+		
+	private boolean switchingStopped(){
+		for(int response : responses){
+			if(response < IDLE_RUNS){
+				return false;
+			}
+		}
+		return true;
 	}
 	
 	private void initAps() throws IOException {
@@ -43,7 +82,7 @@ public class Main extends Host {
 		while(true){
 			msg = receiveMessage();
 			if( msg.startsWith("#") ) {
-				clientIdx = Integer.parseInt(msg.trim().substring(1));
+				 clientIdx = Integer.parseInt(msg.trim().substring(1));
 				apAddrs.put(clientIdx, dtgReceive.getAddress().getHostAddress() + ":" + dtgReceive.getPort());
 				numberOfReplies++;
 				if(numberOfReplies == NUMBER_OF_APS)
@@ -78,6 +117,14 @@ public class Main extends Host {
 			}
 		}
 		return clientList;
+	}
+	
+	@Override
+	protected void sendBroadcast(String toSend) {
+		for(String apAddr : apAddrs.values()) {
+			String[] addr = apAddr.split(":|#");
+			sendMessage(toSend, addr[0], Integer.parseInt(addr[1]));
+		}
 	}
 	
 	/**

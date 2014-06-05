@@ -26,7 +26,7 @@ public class Ap extends Host {
 	private int psi;
 	private int channel;
 	private int[] clientResponse;
-	private ChannelUpdater updater;
+	private ChannelUpdateStrategy updateStrategy;
 
 	private Logger log;
     	
@@ -39,7 +39,7 @@ public class Ap extends Host {
 		this.serverPort = Integer.parseInt(serverAddr[1]);
 		this.psi = CAN_SWITCH;
 		this.channel = 1;
-		this.updater = new ChannelUpdater(new GlobalCoord(new int[]{1,6,11}));
+		this.updateStrategy = new GlobalCoord(new int[]{1,6,11});
 		
 		sayHello();
 		
@@ -95,6 +95,10 @@ public class Ap extends Host {
 					log.info("Message " + msg.trim() + " received. Channel: " + msg.trim());
 					int clientIndex = getClientList().indexOf(dtgReceive.getAddress().getHostAddress() + ":" + dtgReceive.getPort());
 					clientResponse[clientIndex] = Integer.parseInt(msg.trim().substring(2));
+				}
+				else if ( msg.startsWith("#stop") ){
+					log.info("CHANNEL:" + channel);
+					System.exit(0);
 				}
 				else{
 					log.warning("Stray message: " + msg.trim());
@@ -169,7 +173,7 @@ public class Ap extends Host {
 	
 	private void updateChannel(){
 		log.entering(Ap.class.getName(), new Object(){}.getClass().getEnclosingMethod().getName()); //TODO: remove debug messages
-		int minInterferenceChannel = updater.updateChannel(channel, clientResponse);
+		int minInterferenceChannel = updateStrategy.updateChannel(channel, clientResponse);
 		
 		log.info("my channel: " + channel);
 		log.info("clientResponse: " + clientResponse[0]);
@@ -178,6 +182,9 @@ public class Ap extends Host {
 		if( minInterferenceChannel != this.channel ){
 			this.channel = minInterferenceChannel;
 			log.info("Switched channel!");
+		}
+		else{
+			sendMessage("#noop"+idx, serverIP, serverPort);
 		}
 	}
 	
