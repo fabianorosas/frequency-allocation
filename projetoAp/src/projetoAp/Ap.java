@@ -3,6 +3,7 @@ package projetoAp;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.FileHandler;
@@ -15,8 +16,9 @@ public class Ap extends Host {
 	private static final int BUSY_SWITCHING = -1;
 	private static final int CAN_SWITCH = 0;
 	
-	private static final int CHANNEL_SWITCHING_DELAY = 1000;
-	private static final int CHANNEL_SWITCHING_PERIOD = 1000;
+	private static final int CHANNEL_SWITCHING_PERIOD = 2000;
+	private static final int CHANNEL_SWITCHING_DELAY =  new Random().nextInt((CHANNEL_SWITCHING_PERIOD - 1000) + 1) + 1000;
+	
 	private int NUMBER_OF_CLIENTS;
 
 	private Timer timer;
@@ -56,7 +58,6 @@ public class Ap extends Host {
 		switchChannel = new TimerTask(){
 			@Override
 			public void run(){
-				log.entering(Ap.class.getName(), new Object(){}.getClass().getEnclosingMethod().getName()); //TODO: remove debug messages
 				if(canSwitch()){
 					startPhase1();
 					startPhase2();
@@ -64,36 +65,33 @@ public class Ap extends Host {
 				}
 			}
 		};
-		this.timer.schedule(switchChannel, CHANNEL_SWITCHING_DELAY, CHANNEL_SWITCHING_PERIOD); //TODO: randomize period
+		this.timer.schedule(switchChannel, CHANNEL_SWITCHING_DELAY, CHANNEL_SWITCHING_PERIOD);
 	}
 	
 	/**
 	 * Corresponds to the part where the AP functions as a client.
 	 */
 	private void listen(){
-		log.entering(Ap.class.getName(), new Object(){}.getClass().getEnclosingMethod().getName()); //TODO: remove debug messages
 		while(true){
 			msg = receiveMessage();
 
 			synchronized(this){
 				if( msg.startsWith("#lock") ) {
+					//log.info("locked");
 					if(canBeLocked()){
-						log.info("Message " + msg.trim() + " received. I'm free: " + psi);
 						psi++;
 						reply("#c" + channel);
 					}
 					else{
-						log.info("Message " + msg.trim() + " received. I'm busy: " + psi);
 						reply("#c" + BUSY_SWITCHING );
 					}
 				}
 				else if( msg.startsWith("#unlock") ){
-					log.info("Message " + msg.trim() + " received. I'm " + psi);
+					//log.info("unlocked");
 					psi--;
 				}
 				else if ( msg.startsWith("#c") ){
 					int clientIndex = getClientList().indexOf(dtgReceive.getAddress().getHostAddress() + ":" + dtgReceive.getPort());
-					log.info("Message " + msg.trim() + " received from " + (clientIndex));
 					clientResponse[clientIndex] = Integer.parseInt(msg.trim().substring(2));
 				}
 				else if ( msg.startsWith("#stop") ){
@@ -123,41 +121,30 @@ public class Ap extends Host {
 	}
 
 	private void waitForReplies(){
+		//log.info("wait replies");
 		while(!allClientsReplied());
-		log.exiting(Ap.class.getName(), new Object(){}.getClass().getEnclosingMethod().getName()); //TODO: remove debug messages
+		//log.info("all replied");
 	}
 
 	private boolean allClientsReplied(){
 		for(int i = 0; i < clientResponse.length; i++){
-			log.info("cliente: " + i + ": " + clientResponse[i]);
 			if(clientResponse[i] == -2){
 				return false;
 			}
 		}
-		
-/*
-		for(int response : clientResponse){
-			if(response == -2){
-				return false;
-			}
-		}
-				*/
 		return true;
 	}
 	
 	private void reply(String toSend){
-		log.info("message sent: " + toSend + " to idx " + getClientList().indexOf(dtgReceive.getAddress().getHostAddress() + ":" + dtgReceive.getPort()));
 		sendMessage(toSend, dtgReceive.getAddress().getHostAddress(), dtgReceive.getPort());
 	}
 	
 	private void lockAllClients(){
-		log.entering(Ap.class.getName(), new Object(){}.getClass().getEnclosingMethod().getName()); //TODO: remove debug messages
 		resetClientResponse();
 		sendBroadcast("#lock");
 	}
 	
 	private void unlockAllClients(){
-		log.entering(Ap.class.getName(), new Object(){}.getClass().getEnclosingMethod().getName()); //TODO: remove debug messages
 		String[] clientAddr;
 		
 		for(int i = 0; i < clientResponse.length; i++){
@@ -182,12 +169,7 @@ public class Ap extends Host {
 	}
 	
 	private void updateChannel(){
-		log.entering(Ap.class.getName(), new Object(){}.getClass().getEnclosingMethod().getName()); //TODO: remove debug messages
 		int minInterferenceChannel = updateStrategy.updateChannel(channel, clientResponse);
-		
-		log.info("my channel: " + channel);
-		log.info("clientResponse: " + clientResponse[0]);
-		log.info("minInterference channel: " + minInterferenceChannel);
 		
 		if( minInterferenceChannel != this.channel ){
 			this.channel = minInterferenceChannel;
@@ -197,7 +179,6 @@ public class Ap extends Host {
 			sendMessage("#noop"+idx, serverIP, serverPort);
 		}
 	}
-	
 	
 	private void initClientsResponse(){
 		clientResponse = new int[NUMBER_OF_CLIENTS];

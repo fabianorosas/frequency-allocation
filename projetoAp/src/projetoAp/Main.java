@@ -36,7 +36,6 @@ public class Main extends Host {
 	private void waitResponses(){		
 		while(true){
 			msg = receiveMessage();
-			System.out.println(msg);
 
 			if( msg.startsWith("#noop") ) {
 				int clientIndex = Integer.parseInt(msg.trim().substring(5));
