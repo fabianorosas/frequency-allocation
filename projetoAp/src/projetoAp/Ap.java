@@ -74,7 +74,7 @@ public class Ap extends Host {
 		log.entering(Ap.class.getName(), new Object(){}.getClass().getEnclosingMethod().getName()); //TODO: remove debug messages
 		while(true){
 			msg = receiveMessage();
-			
+
 			synchronized(this){
 				if( msg.startsWith("#lock") ) {
 					if(canBeLocked()){
@@ -92,8 +92,8 @@ public class Ap extends Host {
 					psi--;
 				}
 				else if ( msg.startsWith("#c") ){
-					log.info("Message " + msg.trim() + " received.");
 					int clientIndex = getClientList().indexOf(dtgReceive.getAddress().getHostAddress() + ":" + dtgReceive.getPort());
+					log.info("Message " + msg.trim() + " received from " + (clientIndex));
 					clientResponse[clientIndex] = Integer.parseInt(msg.trim().substring(2));
 				}
 				else if ( msg.startsWith("#stop") ){
@@ -128,28 +128,25 @@ public class Ap extends Host {
 	}
 
 	private boolean allClientsReplied(){
-		boolean flague = false;
-		
 		for(int i = 0; i < clientResponse.length; i++){
 			log.info("cliente: " + i + ": " + clientResponse[i]);
 			if(clientResponse[i] == -2){
-				flague = true;
+				return false;
 			}
 		}
 		
-		if(flague)
-			return false;
-		/*
+/*
 		for(int response : clientResponse){
 			if(response == -2){
 				return false;
 			}
 		}
-		*/
+				*/
 		return true;
 	}
 	
 	private void reply(String toSend){
+		log.info("message sent: " + toSend + " to idx " + getClientList().indexOf(dtgReceive.getAddress().getHostAddress() + ":" + dtgReceive.getPort()));
 		sendMessage(toSend, dtgReceive.getAddress().getHostAddress(), dtgReceive.getPort());
 	}
 	
