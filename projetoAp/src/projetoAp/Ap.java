@@ -92,7 +92,7 @@ public class Ap extends Host {
 					psi--;
 				}
 				else if ( msg.startsWith("#c") ){
-					log.info("Message " + msg.trim() + " received. Channel: " + msg.trim());
+					log.info("Message " + msg.trim() + " received.");
 					int clientIndex = getClientList().indexOf(dtgReceive.getAddress().getHostAddress() + ":" + dtgReceive.getPort());
 					clientResponse[clientIndex] = Integer.parseInt(msg.trim().substring(2));
 				}
@@ -128,11 +128,24 @@ public class Ap extends Host {
 	}
 
 	private boolean allClientsReplied(){
+		boolean flague = false;
+		
+		for(int i = 0; i < clientResponse.length; i++){
+			log.info("cliente: " + i + ": " + clientResponse[i]);
+			if(clientResponse[i] == -2){
+				flague = true;
+			}
+		}
+		
+		if(flague)
+			return false;
+		/*
 		for(int response : clientResponse){
 			if(response == -2){
 				return false;
 			}
 		}
+		*/
 		return true;
 	}
 	
@@ -203,7 +216,7 @@ public class Ap extends Host {
 	}
 	
 	private boolean canBeLocked(){
-		return !(this.psi == BUSY_SWITCHING);
+		return (this.psi == CAN_SWITCH);
 	}
 	
 	public int getNUMBER_OF_CLIENTS() {
