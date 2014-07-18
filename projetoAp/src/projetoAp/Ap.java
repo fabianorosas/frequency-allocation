@@ -194,7 +194,7 @@ public class Ap extends Host {
 	}
 	
 	private boolean canBeLocked(){
-		return (this.psi == CAN_SWITCH);
+		return (this.psi != BUSY_SWITCHING);
 	}
 	
 	public int getNUMBER_OF_CLIENTS() {
