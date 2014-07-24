@@ -16,6 +16,9 @@ public abstract class Host {
 	    
 	protected String msg;
 	
+	protected int cycle;
+	protected int messages;
+	
 	private ArrayList<String> clientList;
 	
 	public Host() {
@@ -25,6 +28,8 @@ public abstract class Host {
 			System.err.println(e);
 		}
 		this.clientList = new ArrayList<String>();
+		this.cycle = 0;
+		this.messages = 0;
 	}
 	
 	public Host(int port) throws SocketException{
@@ -42,6 +47,7 @@ public abstract class Host {
 		try {
 			dtgSend = new DatagramPacket(toSend.getBytes(), toSend.length(), InetAddress.getByName(ip) , port);
 			getSocket().send(dtgSend);
+			this.messages++;
 		} catch (IOException e) {
 			System.err.println(e.toString());
 		}

@@ -16,11 +16,11 @@ public class Ap extends Host {
 	private static final int BUSY_SWITCHING = -1;
 	private static final int CAN_SWITCH = 0;
 	
-	private static final int CHANNEL_SWITCHING_PERIOD = 2000;
+	private static final int CHANNEL_SWITCHING_PERIOD = new Random().nextInt((10000 - 5000) + 1) + 5000;
 	private static final int CHANNEL_SWITCHING_DELAY =  new Random().nextInt((CHANNEL_SWITCHING_PERIOD - 1000) + 1) + 1000;
 	
 	private int NUMBER_OF_CLIENTS;
-
+	
 	private Timer timer;
 	private TimerTask switchChannel;
 
@@ -29,6 +29,7 @@ public class Ap extends Host {
 	private int channel;
 	private int[] clientResponse;
 	private ChannelUpdateStrategy updateStrategy;
+	private InterferenceModel interferenceModel;
 
 	private Logger log;
     	
@@ -41,7 +42,8 @@ public class Ap extends Host {
 		this.serverPort = Integer.parseInt(serverAddr[1]);
 		this.psi = CAN_SWITCH;
 		this.channel = 1;
-		this.updateStrategy = new GlobalCoord(new int[]{1,6,11});
+		this.updateStrategy = new GlobalCoord(new int[]{1,2,3,4,5,6,7,8,9,10,11});
+		this.interferenceModel = new InterferenceModel();
 		
 		sayHello();
 		
@@ -170,6 +172,8 @@ public class Ap extends Host {
 	
 	private void updateChannel(){
 		int minInterferenceChannel = updateStrategy.updateChannel(channel, clientResponse);
+
+		writeFile();
 		
 		if( minInterferenceChannel != this.channel ){
 			this.channel = minInterferenceChannel;
@@ -178,6 +182,16 @@ public class Ap extends Host {
 		else{
 			sendMessage("#noop"+idx, serverIP, serverPort);
 		}
+	}
+	
+	private double getTotalInterference(){
+		double totalInterferenceInChannel = 0.0;
+				
+		for(int response : clientResponse){
+			totalInterferenceInChannel += interferenceModel.get(Math.abs(channel-response));
+		}
+		
+		return totalInterferenceInChannel;
 	}
 	
 	private void initClientsResponse(){
@@ -221,6 +235,13 @@ public class Ap extends Host {
 			initClientsResponse();
 		}
 	}	
+
+	private void writeFile(){
+		cycle++;
+		//log.info(cycle + " " + messages);
+		log.info(cycle + " " + getTotalInterference());
+		messages=0;
+	}
 	
 	private void startLogging() {
 		FileHandler handler;
