@@ -1,2 +1,7 @@
 ap.jar
 main.jar
+*.pdf
+*.eps
+*.log
+graficos*/*
+logs*/*
