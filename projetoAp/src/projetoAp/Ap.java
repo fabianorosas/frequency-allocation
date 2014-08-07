@@ -189,6 +189,7 @@ public class Ap extends Host {
 		else{
 			sendMessage("#noop"+idx, serverIP, serverPort);
 			stopTimer();
+			log.info("CHANNEL:" + channel);
 			log.info("Best channel selected. Sleeping...");
 		}
 	}
