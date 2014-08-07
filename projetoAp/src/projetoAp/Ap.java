@@ -23,7 +23,7 @@ public class Ap extends Host {
 	
 	private Timer timer;
 	private TimerTask switchChannel;
-
+	
 	private int idx;
 	private int psi;
 	private int channel;
@@ -44,7 +44,7 @@ public class Ap extends Host {
 		this.channel = 1;
 		this.updateStrategy = new GlobalCoord(new int[]{1,2,3,4,5,6,7,8,9,10,11});
 		this.interferenceModel = new InterferenceModel();
-		
+				
 		sayHello();
 		
 		waitForClientList();
@@ -56,20 +56,27 @@ public class Ap extends Host {
 	 * Executes the channel switching logic every <CHANNEL_SWITCHING_PERIOD> milliseconds.
 	 */
 	private void startTimer(){
-		timer = new Timer();
-		switchChannel = new TimerTask(){
-			@Override
-			public void run(){
-				if(canSwitch()){
-					startPhase1();
-					startPhase2();
-					psi = CAN_SWITCH;
+		if(timer == null){
+			timer = new Timer();
+			switchChannel = new TimerTask(){
+				@Override
+				public void run(){
+					if(canSwitch()){
+						startPhase1();
+						startPhase2();
+						psi = CAN_SWITCH;
+					}
 				}
-			}
-		};
-		this.timer.schedule(switchChannel, CHANNEL_SWITCHING_DELAY, CHANNEL_SWITCHING_PERIOD);
+			};
+			timer.schedule(switchChannel, CHANNEL_SWITCHING_DELAY, CHANNEL_SWITCHING_PERIOD);
+		}
 	}
 	
+	private void stopTimer(){
+		timer.cancel();
+		timer = null;
+	}
+
 	/**
 	 * Corresponds to the part where the AP functions as a client.
 	 */
@@ -79,7 +86,6 @@ public class Ap extends Host {
 
 			synchronized(this){
 				if( msg.startsWith("#lock") ) {
-					//log.info("locked");
 					if(canBeLocked()){
 						psi++;
 						reply("#c" + channel);
@@ -89,7 +95,6 @@ public class Ap extends Host {
 					}
 				}
 				else if( msg.startsWith("#unlock") ){
-					//log.info("unlocked");
 					psi--;
 				}
 				else if ( msg.startsWith("#c") ){
@@ -99,6 +104,9 @@ public class Ap extends Host {
 				else if ( msg.startsWith("#stop") ){
 					log.info("CHANNEL:" + channel);
 					System.exit(0);
+				}
+				else if ( msg.startsWith("#wakeup") ){
+					startTimer();
 				}
 				else{
 					log.warning("Stray message: " + msg.trim());
@@ -123,9 +131,7 @@ public class Ap extends Host {
 	}
 
 	private void waitForReplies(){
-		//log.info("wait replies");
 		while(!allClientsReplied());
-		//log.info("all replied");
 	}
 
 	private boolean allClientsReplied(){
@@ -178,9 +184,12 @@ public class Ap extends Host {
 		if( minInterferenceChannel != this.channel ){
 			this.channel = minInterferenceChannel;
 			log.info("Switched channel!");
+			sendBroadcast("#wakeup");
 		}
 		else{
 			sendMessage("#noop"+idx, serverIP, serverPort);
+			stopTimer();
+			log.info("Best channel selected. Sleeping...");
 		}
 	}
 	
@@ -238,7 +247,6 @@ public class Ap extends Host {
 
 	private void writeFile(){
 		cycle++;
-		//log.info(cycle + " " + messages);
 		log.info(cycle + " " + getTotalInterference());
 		messages=0;
 	}

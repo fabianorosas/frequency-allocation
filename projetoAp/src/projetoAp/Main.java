@@ -44,9 +44,9 @@ public class Main extends Host {
 			else{
 				System.err.println("Stray message: " + msg.trim());
 			}
-			
+		 
 			if(switchingStopped()){
-				notifyAllAps();
+				//notifyAllAps();
 				System.out.println("All APs are idle for "+ IDLE_RUNS + " runs.");
 				System.exit(0);
 			}
@@ -56,7 +56,7 @@ public class Main extends Host {
 	private void notifyAllAps(){
 		sendBroadcast("#stop");
 	}
-		
+	
 	private boolean switchingStopped(){
 		for(int response : responses){
 			if(response < IDLE_RUNS){
