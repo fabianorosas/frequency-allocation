@@ -10,7 +10,6 @@ import java.util.Scanner;
 
 public class Main extends Host {
 	
-	private static final int IDLE_RUNS = 50;
 	private static int NUMBER_OF_APS;
 	private static int NUMBER_OF_PROCESSES;
 	private static ArrayList<char []> topology = new ArrayList<char []>();
@@ -23,14 +22,14 @@ public class Main extends Host {
 		Arrays.fill(responses, 0);
 		System.out.println("Server starting @ "+ this.socket.getLocalAddress().getHostAddress()+":"+this.socket.getLocalPort());
 		setupTopology();
+		System.out.println("Topology set. Waiting for the APs to finish...");
+		waitResponses();
 	}
 	
 	private void setupTopology() throws IOException{
 		initAps();
 		waitForReplies();
 		setupClientLists();
-		System.out.println("Topology set. Waiting for the APs to finish...");
-		waitResponses();
 	}
 	
 	private void waitResponses(){		
@@ -44,26 +43,7 @@ public class Main extends Host {
 			else{
 				System.err.println("Stray message: " + msg.trim());
 			}
-		 
-			if(switchingStopped()){
-				//notifyAllAps();
-				System.out.println("All APs are idle for "+ IDLE_RUNS + " runs.");
-				System.exit(0);
-			}
 		}
-	}
-	
-	private void notifyAllAps(){
-		sendBroadcast("#stop");
-	}
-	
-	private boolean switchingStopped(){
-		for(int response : responses){
-			if(response < IDLE_RUNS){
-				return false;
-			}
-		}
-		return true;
 	}
 	
 	private void initAps() throws IOException {
@@ -85,8 +65,9 @@ public class Main extends Host {
 				 clientIdx = Integer.parseInt(msg.trim().substring(1));
 				apAddrs.put(clientIdx, dtgReceive.getAddress().getHostAddress() + ":" + dtgReceive.getPort());
 				numberOfReplies++;
-				if(numberOfReplies == NUMBER_OF_APS)
+				if(numberOfReplies == NUMBER_OF_APS){
 					break;
+				}
 			}
 		}
 		

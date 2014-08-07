@@ -101,10 +101,6 @@ public class Ap extends Host {
 					int clientIndex = getClientList().indexOf(dtgReceive.getAddress().getHostAddress() + ":" + dtgReceive.getPort());
 					clientResponse[clientIndex] = Integer.parseInt(msg.trim().substring(2));
 				}
-				else if ( msg.startsWith("#stop") ){
-					log.info("CHANNEL:" + channel);
-					System.exit(0);
-				}
 				else if ( msg.startsWith("#wakeup") ){
 					startTimer();
 				}
