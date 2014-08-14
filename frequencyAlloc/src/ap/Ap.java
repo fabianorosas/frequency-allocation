@@ -257,7 +257,7 @@ public class Ap extends Host {
 			handler = new FileHandler("ap" + idx + ".log", 0, 1, true);
 			handler.setFormatter(new SimpleFormatter());
 			handler.setLevel(Level.ALL);
-			log = Logger.getLogger("projetoAp.Ap");
+			log = Logger.getLogger("frequencyAlloc.Ap");
 			log.setUseParentHandlers(false);
 			log.addHandler(handler);
 			log.setLevel(Level.FINER);

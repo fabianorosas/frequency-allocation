@@ -1,7 +1,7 @@
 #!/bin/sh
 
-mkdir graficos
-mkdir logs
+mkdir -p graphs
+mkdir -p logs
 
 for i in {0..9}; do
     awk '/INFO: [0-9]/ { print $2" "$3 }' ap$i.log > ap$i;
@@ -12,15 +12,15 @@ for i in {0..9}; do
 
 reset
 unset key
-set title "Interferencia - ap$i"
-set ylabel "interferencia"
-set xlabel "ciclos"
+set title "Interference - ap$i"
+set ylabel "interference"
+set xlabel "cycles"
 set xtics 2
+# ranges still need some tuning
 set yrange [0:0.1]
 set xrange [0:5]
 set term post eps enhanced color
 set out  'ap$i.eps'
-#plot 'ap$i'
 plot 'ap$i' with lines
 
 EOF
