@@ -1,4 +1,6 @@
-package projetoAp;
+package ap;
+
+import util.InterferenceModel;
 
 public class GlobalCoord implements ChannelUpdateStrategy {
 
