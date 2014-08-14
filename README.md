@@ -29,3 +29,5 @@ java -jar ap.jar <ap_number> <serverIP:port>
 The APs will log to apX.log files.
 
 ---
+
+[![DOI](https://zenodo.org/badge/5552/fabianorosas/frequency-allocation.png)](http://dx.doi.org/10.5281/zenodo.11288)
